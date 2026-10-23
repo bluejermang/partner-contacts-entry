@@ -64,12 +64,15 @@
         .catch(function () { return false; });
     }
 
-    function showOff(hasServer) {
+    // why: 'down' 서버 주소가 있는데 답이 없음 · 'closed' 서버 PC 설정에서 외부 접속을 꺼 둠(live.json serverUrl null — 2026-10-23 패널 T29) · 'never' 받은 주소가 없음
+    function showOff(why) {
       box.className = 'off';
       stateEl.textContent = '지금은 접속할 수 없습니다';
-      descEl.textContent = hasServer
+      descEl.textContent = why === 'down'
         ? '서버 PC가 꺼져 있거나 켜지는 중입니다. 서버 PC가 켜지면 1~3분 안에 저절로 연결됩니다.'
-        : '아직 서버 PC가 연결된 적이 없습니다. 서버 PC를 켜 주세요.';
+        : why === 'closed'
+          ? '서버 PC에서 외부 접속을 꺼 두었습니다. 다시 켜면 1~3분 안에 저절로 연결됩니다.'
+          : '아직 서버 PC가 연결된 적이 없습니다. 서버 PC를 켜 주세요.';
       retry.hidden = false;
       var now = new Date();
       checked.textContent = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
@@ -83,13 +86,13 @@
         .catch(function () { return null; })
         .then(function (live) {
           var url = live && live.serverUrl;
-          if (!url) return showOff(false);
+          if (!url) return showOff(live && live.serverUrl === null ? 'closed' : 'never');
           return serverAlive(url).then(function (alive) {
             if (alive) {
               stateEl.textContent = '서버로 이동합니다…';
               location.replace(new URL(location.hash || '', url).href); // 보던 화면 주소(#partners/people?…)도 그대로 넘긴다
             } else {
-              showOff(true);
+              showOff('down');
             }
           });
         })
