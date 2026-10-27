@@ -90,7 +90,8 @@
           return serverAlive(url).then(function (alive) {
             if (alive) {
               stateEl.textContent = '서버로 이동합니다…';
-              location.replace(new URL(location.hash || '', url).href); // 보던 화면 주소(#partners/people?…)도 그대로 넘긴다
+              // 보던 화면 주소(#partners/people?…)도 그대로 넘긴다. #simple(간단 화면 시안 — 2026-10-27)은 /simple 로 바로 — 지금 화면(index.html)을 거치면 그 큰 화면 파일까지 받았다 (검토 고침)
+              location.replace(new URL(location.hash === '#simple' ? 'simple#simple' : (location.hash || ''), url).href);
             } else {
               showOff('down');
             }
